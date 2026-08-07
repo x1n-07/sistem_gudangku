@@ -1,0 +1,8 @@
+{
+  "name": "Sistem Manajemen Gudang",
+  "description": "Aplikasi terintegrasi untuk pencatatan stok barang, manajemen inventaris alat, dan penggunaan kendaraan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
