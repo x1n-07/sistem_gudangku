@@ -4,9 +4,11 @@ import { Plus, Trash2, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const TechnicianView: React.FC = () => {
-  const { technicians, addTechnician, removeTechnician } = useAppContext();
+  const { technicians, addTechnician, removeTechnician, currentUser } = useAppContext();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newTech, setNewTech] = useState({ name: '', role: '', phone: '' });
+  const canAddTechnician = currentUser?.role === 'admin' || currentUser?.role === 'teknisi' || currentUser?.role === 'superadmin';
+  const canRemoveTechnician = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,14 +20,16 @@ export const TechnicianView: React.FC = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold text-slate-800">Daftar Teknisi</h2>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors shadow-sm"
-        >
-          <Plus size={18} className="mr-2" />
-          Tambah Teknisi
-        </button>
+        <h2 className="text-2xl font-bold text-slate-800">Pengambil Barang</h2>
+        {canAddTechnician && (
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors shadow-sm"
+          >
+            <Plus size={18} className="mr-2" />
+            Tambah Teknisi
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
@@ -53,13 +57,17 @@ export const TechnicianView: React.FC = () => {
                 <td className="p-4 text-slate-600">{tech.role}</td>
                 <td className="p-4 text-slate-600">{tech.phone}</td>
                 <td className="p-4 text-right">
-                  <button 
-                    onClick={() => removeTechnician(tech.id)}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                    title="Hapus Teknisi"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  {canRemoveTechnician ? (
+                    <button 
+                      onClick={() => removeTechnician(tech.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      title="Hapus Teknisi"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  ) : (
+                    <span className="text-xs text-slate-400">Tidak ada aksi</span>
+                  )}
                 </td>
               </tr>
             ))}

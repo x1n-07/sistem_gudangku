@@ -7,6 +7,7 @@ import { ConfirmDeleteModal } from '../ConfirmDeleteModal';
 
 export const GoodsView: React.FC = () => {
   const { goods, goodsTransactions, technicians, addGoodsItem, addGoodsTransaction, removeGoodsItem, currentUser } = useAppContext();
+  const canManageGoods = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const [activeTab, setActiveTab] = useState<'stok' | 'riwayat'>('stok');
   
   // Modal states
@@ -86,7 +87,7 @@ export const GoodsView: React.FC = () => {
           </button>
         </div>
         {activeTab === 'stok' && (
-          <div className="w-full md:w-auto pb-2">
+          <div className="w-full md:w-auto pb-2 flex flex-col md:flex-row md:items-center md:gap-4">
             <input
               type="text"
               placeholder="Cari nama atau kategori..."
@@ -94,6 +95,15 @@ export const GoodsView: React.FC = () => {
               onChange={e => setSearchQuery(e.target.value)}
               className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm w-full md:w-64"
             />
+            {canManageGoods && (
+              <button 
+                onClick={() => setIsAddModalOpen(true)}
+                className="mt-3 md:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                <Plus size={18} className="mr-2" />
+                Barang Baru
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -131,13 +141,14 @@ export const GoodsView: React.FC = () => {
                     <button 
                       onClick={() => { setSelectedItemId(item.id); setTxForm(prev => ({...prev, type: 'IN'})); setIsTxModalOpen(true); }}
                       className="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 rounded hover:bg-green-200 transition-colors"
+                      disabled={!canManageGoods}
                     >
                       Masuk
                     </button>
                     <button 
                       onClick={() => { setSelectedItemId(item.id); setTxForm(prev => ({...prev, type: 'OUT'})); setIsTxModalOpen(true); }}
                       className="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 rounded hover:bg-amber-200 transition-colors"
-                      disabled={item.stock === 0}
+                      disabled={!canManageGoods || item.stock === 0}
                     >
                       Keluar
                     </button>

@@ -8,6 +8,7 @@ import { ConfirmDeleteModal } from '../ConfirmDeleteModal';
 export const EquipmentView: React.FC = () => {
   const { equipment, equipmentLogs, technicians, addEquipmentItem, addEquipmentLog, updateEquipmentCondition, removeEquipmentItem, currentUser } = useAppContext();
   const [activeTab, setActiveTab] = useState<'daftar' | 'riwayat'>('daftar');
+  const canManageEquipment = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -84,13 +85,15 @@ export const EquipmentView: React.FC = () => {
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-slate-800">Manajemen Alat & Inventaris</h2>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm"
-        >
-          <Plus size={18} className="mr-2" />
-          Alat Baru
-        </button>
+        {canManageEquipment && (
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            <Plus size={18} className="mr-2" />
+            Alat Baru
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row border-b border-slate-200 justify-between items-start md:items-center gap-4">
@@ -170,21 +173,25 @@ export const EquipmentView: React.FC = () => {
                     <Trash2 size={18} />
                   </button>
                 )}
-                {item.status === 'Tersedia' ? (
-                  <button 
-                    onClick={() => handleOpenLogModal(item.id, 'PINJAM')}
-                    disabled={item.condition === 'Rusak Berat'}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Pinjam Alat
-                  </button>
+                {canManageEquipment ? (
+                  item.status === 'Tersedia' ? (
+                    <button 
+                      onClick={() => handleOpenLogModal(item.id, 'PINJAM')}
+                      disabled={item.condition === 'Rusak Berat'}
+                      className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Pinjam Alat
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => handleOpenLogModal(item.id, 'KEMBALI')}
+                      className="flex-1 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition-colors"
+                    >
+                      Kembalikan Alat
+                    </button>
+                  )
                 ) : (
-                  <button 
-                    onClick={() => handleOpenLogModal(item.id, 'KEMBALI')}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition-colors"
-                  >
-                    Kembalikan Alat
-                  </button>
+                  <div className="flex-1 px-4 py-2 text-sm font-medium text-slate-500 bg-slate-100 rounded-lg text-center">Hanya lihat</div>
                 )}
               </div>
             </div>

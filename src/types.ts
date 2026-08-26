@@ -4,7 +4,7 @@ export type EquipmentStatus = 'Tersedia' | 'Dipinjam';
 export type VehicleStatus = 'Tersedia' | 'Sedang Digunakan' | 'Perbaikan';
 export type VehicleNeedType = 'BBM' | 'Servis' | 'Suku Cadang' | 'Lainnya';
 
-export type UserRole = 'admin' | 'superadmin';
+export type UserRole = 'admin' | 'superadmin' | 'pengawas' | 'teknisi';
 
 export interface User {
   id: string;
@@ -12,13 +12,21 @@ export interface User {
   password?: string;
   role: UserRole;
   name: string;
-  company?: string;
+  companyId?: string;
   contact?: string;
+  disabled?: boolean;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  disabled?: boolean;
 }
 
 export interface Technician {
   id: string;
   adminId: string;
+  companyId: string;
   name: string;
   role: string;
   phone: string;
@@ -27,6 +35,7 @@ export interface Technician {
 export interface GoodsItem {
   id: string;
   adminId: string;
+  companyId: string;
   name: string;
   category: string;
   stock: number;
@@ -37,6 +46,7 @@ export interface GoodsItem {
 export interface GoodsTransaction {
   id: string;
   adminId: string;
+  companyId: string;
   itemId: string;
   type: TransactionType;
   quantity: number;
@@ -48,6 +58,7 @@ export interface GoodsTransaction {
 export interface EquipmentItem {
   id: string;
   adminId: string;
+  companyId: string;
   name: string;
   condition: EquipmentCondition;
   status: EquipmentStatus;
@@ -57,6 +68,7 @@ export interface EquipmentItem {
 export interface EquipmentLog {
   id: string;
   adminId: string;
+  companyId: string;
   equipmentId: string;
   user: string;
   action: 'PINJAM' | 'KEMBALI';
@@ -68,6 +80,7 @@ export interface EquipmentLog {
 export interface VehicleItem {
   id: string;
   adminId: string;
+  companyId: string;
   plateNumber: string;
   name: string;
   status: VehicleStatus;
@@ -76,6 +89,7 @@ export interface VehicleItem {
 export interface VehicleLog {
   id: string;
   adminId: string;
+  companyId: string;
   vehicleId: string;
   driver: string;
   purpose: string;
@@ -87,6 +101,7 @@ export interface VehicleLog {
 export interface VehicleNeed {
   id: string;
   adminId: string;
+  companyId: string;
   vehicleId: string;
   type: VehicleNeedType;
   description: string;
