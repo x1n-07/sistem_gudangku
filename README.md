@@ -2,45 +2,50 @@
 
 Aplikasi terintegrasi untuk pencatatan stok barang, manajemen inventaris alat, dan penggunaan kendaraan.
 
-## Instalasi & Menjalankan
+## Arsitektur Aplikasi
+Aplikasi ini menggunakan:
+- **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS 4
+- **Backend API**: Node.js + Express
+- **Database**: PostgreSQL 16 (on-premise / lokal)
 
-```bash
-npm install
-npm run dev
-```
+## Instalasi & Menjalankan Aplikasi
 
-Buka browser di `http://localhost:3000`.
-
-## Sinkronisasi Data Antar Device
-
-Secara default, aplikasi menyimpan data di **localStorage** (hanya tersimpan di 1 browser/device).
-Untuk membuat data **sama di semua device dan browser**, Anda perlu mengaktifkan sinkronisasi via **Supabase** (gratis).
-
-### Langkah-langkah:
-
-1. **Buat akun gratis** di [https://supabase.com](https://supabase.com)
-
-2. **Buat project baru** di Supabase Dashboard
-
-3. **Buka SQL Editor** di Supabase Dashboard, lalu **copy-paste** seluruh isi file `supabase-schema.sql` ini dan klik **Run/Execute**
-
-4. **Ambil kredensial** Anda:
-   - Buka **Settings > API** di Supabase Dashboard
-   - Copy **Project URL** (contoh: `https://xxxxx.supabase.co`)
-   - Copy **anon public key**
-
-5. **Buat file `.env`** di root project (jika belum ada):
+1. Pastikan Anda memiliki server **PostgreSQL 16** berjalan (bisa di localhost).
+2. Install dependensi:
+   ```bash
+   npm install
    ```
-   VITE_SUPABASE_URL="https://xxxxx.supabase.co"
-   VITE_SUPABASE_ANON_KEY="eyJhbGciOi..."
+3. Buat file `.env.server` di root project dan isi dengan detail koneksi PostgreSQL Anda:
+   ```env
+   DB_USER=serveradmin
+   DB_PASSWORD=salamalekum
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=gudangku
+   PORT=5000
    ```
-
-6. **Jalankan ulang** aplikasi:
+   *(Pastikan database `gudangku` sudah Anda buat sebelumnya di PostgreSQL, atau ubah `DB_NAME` jika namanya beda)*
+4. Buat file `.env` di root project untuk menghubungkan frontend ke API lokal:
+   ```env
+   VITE_API_URL=http://localhost:5000
+   ```
+5. Jalankan aplikasi (server API dan frontend akan jalan sekaligus):
    ```bash
    npm run dev
    ```
 
-Sekarang setiap perubahan data akan otomatis tersimpan di Supabase dan bisa diakses dari device/browser mana pun!
+Tunggu hingga console menampilkan:
+- `Backend server running on http://localhost:5000`
+- `Vite server ready`
+
+Aplikasi web dapat diakses di browser pada: `http://localhost:3000`
+
+### Inisialisasi Database
+Saat backend API pertama kali dijalankan (`npm run dev`), ia akan secara otomatis terhubung ke PostgreSQL, membuat seluruh tabel yang dibutuhkan jika belum ada, serta mengisi data default (stok awal, user superadmin, dll). Anda tidak perlu menjalankan skrip SQL secara manual.
+
+## Sinkronisasi Data Antar Device
+
+Backend Express dan PostgreSQL memastikan bahwa seluruh device dalam satu jaringan lokal yang mengakses web ini selalu melihat data yang tersinkronisasi. Frontend (React) secara otomatis akan melakukan *polling* ke server API setiap 10 detik untuk memastikan data real-time, selain juga melakukan sinkronisasi otomatis setiap kali terjadi transaksi/perubahan data.
 
 ## Default Login
 
@@ -52,9 +57,3 @@ Sekarang setiap perubahan data akan otomatis tersimpan di Supabase dan bisa diak
 | pengawas1     | 123      | pengawas   |
 | teknisi1      | 123      | teknisi    |
 
-## Tech Stack
-
-- React 19 + TypeScript
-- Vite
-- Tailwind CSS 4
-- Supabase (PostgreSQL + Realtime)
