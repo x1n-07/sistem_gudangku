@@ -10,6 +10,7 @@ export const VehicleView: React.FC = () => {
     vehicles, vehicleLogs, vehicleNeeds, technicians, currentUser,
     addVehicleItem, addVehicleLog, finishVehicleTrip, addVehicleNeed, updateVehicleStatus, removeVehicleItem
   } = useAppContext();
+  const canManageVehicles = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   
   const [activeTab, setActiveTab] = useState<'daftar' | 'perjalanan' | 'kebutuhan'>('daftar');
   
@@ -70,13 +71,15 @@ export const VehicleView: React.FC = () => {
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-slate-800">Operasional Kendaraan</h2>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors shadow-sm"
-        >
-          <Plus size={18} className="mr-2" />
-          Kendaraan Baru
-        </button>
+        {canManageVehicles && (
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="w-full sm:w-auto flex justify-center items-center px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors shadow-sm"
+          >
+            <Plus size={18} className="mr-2" />
+            Kendaraan Baru
+          </button>
+        )}
       </div>
 
       <div className="flex border-b border-slate-200 overflow-x-auto hide-scrollbar">
@@ -160,22 +163,26 @@ export const VehicleView: React.FC = () => {
                 
                 <div className="bg-slate-50 p-4 border-t border-slate-100 grid grid-cols-2 gap-2 mt-auto">
                   {vehicle.status === 'Tersedia' && (
-                    <>
-                      <button 
-                        onClick={() => { setSelectedVehicleId(vehicle.id); setIsTripModalOpen(true); }}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors flex justify-center items-center"
-                      >
-                        <Navigation size={14} className="mr-1.5" /> Pakai
-                      </button>
-                      <button 
-                        onClick={() => { setSelectedVehicleId(vehicle.id); setIsNeedModalOpen(true); }}
-                        className="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg transition-colors flex justify-center items-center"
-                      >
-                        <Fuel size={14} className="mr-1.5" /> Catat Kebutuhan
-                      </button>
-                    </>
+                    canManageVehicles ? (
+                      <>
+                        <button 
+                          onClick={() => { setSelectedVehicleId(vehicle.id); setIsTripModalOpen(true); }}
+                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors flex justify-center items-center"
+                        >
+                          <Navigation size={14} className="mr-1.5" /> Pakai
+                        </button>
+                        <button 
+                          onClick={() => { setSelectedVehicleId(vehicle.id); setIsNeedModalOpen(true); }}
+                          className="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg transition-colors flex justify-center items-center"
+                        >
+                          <Fuel size={14} className="mr-1.5" /> Catat Kebutuhan
+                        </button>
+                      </>
+                    ) : (
+                      <div className="col-span-2 px-3 py-2 bg-slate-100 text-slate-500 text-center text-xs font-medium rounded-lg">Hanya lihat</div>
+                    )
                   )}
-                  {vehicle.status === 'Sedang Digunakan' && (
+                  {vehicle.status === 'Sedang Digunakan' && canManageVehicles && (
                     <button 
                       onClick={() => activeTrip && finishVehicleTrip(activeTrip.id)}
                       className="col-span-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors flex justify-center items-center"
@@ -183,13 +190,16 @@ export const VehicleView: React.FC = () => {
                       <CheckCircle size={14} className="mr-1.5" /> Selesaikan Perjalanan
                     </button>
                   )}
-                  {vehicle.status === 'Perbaikan' && (
+                  {vehicle.status === 'Perbaikan' && canManageVehicles && (
                     <button 
                       onClick={() => updateVehicleStatus(vehicle.id, 'Tersedia')}
                       className="col-span-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300 text-xs font-medium rounded-lg transition-colors flex justify-center items-center"
                     >
                       <CheckCircle size={14} className="mr-1.5" /> Tandai Selesai Perbaikan
                     </button>
+                  )}
+                  {!canManageVehicles && vehicle.status !== 'Tersedia' && (
+                    <div className="col-span-2 px-3 py-2 bg-slate-100 text-slate-500 text-center text-xs font-medium rounded-lg">Hanya lihat</div>
                   )}
                 </div>
               </div>

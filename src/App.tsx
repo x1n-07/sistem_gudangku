@@ -12,7 +12,7 @@ import { AppProvider, useAppContext } from './store';
 import { Menu } from 'lucide-react';
 
 function Dashboard() {
-  const { currentUser } = useAppContext();
+  const { currentUser, companies } = useAppContext();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -21,8 +21,8 @@ function Dashboard() {
     setIsSidebarOpen(false); // Close sidebar automatically when menu is selected
   };
 
-  const appTitle = currentUser?.role === 'admin' && currentUser?.company 
-    ? currentUser.company 
+  const appTitle = currentUser?.role === 'admin'
+    ? companies.find(company => company.id === currentUser.companyId)?.name ?? 'Ku'
     : 'Ku';
 
   return (

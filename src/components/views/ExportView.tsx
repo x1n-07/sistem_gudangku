@@ -230,7 +230,7 @@ export const ExportView: React.FC = () => {
             </div>
             <div>
               <h3 className="font-bold text-slate-800 text-lg">Teknisi</h3>
-              <p className="text-sm text-slate-500 mt-1">Data daftar teknisi beserta peran dan kontak yang dapat dihubungi.</p>
+              <p className="text-sm text-slate-500 mt-1">Data daftar nama beserta peran dan kontak yang dapat dihubungi.</p>
             </div>
           </div>
           <div className="flex space-x-3 mt-4 pt-4 border-t border-slate-100">

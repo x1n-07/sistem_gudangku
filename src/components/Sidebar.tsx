@@ -9,9 +9,9 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
-  const { currentUser, logout } = useAppContext();
+  const { currentUser, companies, logout } = useAppContext();
   
-  const navItems = [
+  const allItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'goods', label: 'Stok Barang', icon: <Package size={20} /> },
     { id: 'equipment', label: 'Inventaris Alat', icon: <Wrench size={20} /> },
@@ -20,12 +20,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'export', label: 'Ekspor Data', icon: <Download size={20} /> },
   ];
 
-  if (currentUser?.role === 'superadmin') {
-    navItems.push({ id: 'users', label: 'Manajemen Akun', icon: <Building size={20} /> });
-  }
+  const navItems = currentUser?.role === 'superadmin'
+    ? [...allItems, { id: 'users', label: 'Manajemen Akun', icon: <Building size={20} /> }]
+    : currentUser?.role === 'admin'
+    ? allItems
+    : currentUser?.role === 'pengawas'
+    ? allItems.filter(item => item.id !== 'technicians')
+    : currentUser?.role === 'teknisi'
+    ? allItems.filter(item => item.id === 'technicians' || item.id === 'dashboard')
+    : [{ id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> }];
 
-  const appTitle = currentUser?.role === 'admin' && currentUser?.company 
-    ? currentUser.company.toUpperCase() 
+  const appTitle = currentUser?.companyId
+    ? companies.find(company => company.id === currentUser.companyId)?.name?.toUpperCase() ?? 'KU'
     : 'KU';
 
   return (

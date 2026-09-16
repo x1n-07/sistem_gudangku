@@ -3,11 +3,12 @@ import {
   GoodsItem, GoodsTransaction, 
   EquipmentItem, EquipmentLog, 
   VehicleItem, VehicleLog, VehicleNeed,
-  Technician, User
+  Technician, User, Company
 } from './types';
 
 interface AppState {
   users: User[];
+  companies: Company[];
   currentUser: User | null;
   goods: GoodsItem[];
   goodsTransactions: GoodsTransaction[];
@@ -23,55 +24,68 @@ interface AppContextType extends AppState {
   login: (username: string, password?: string) => boolean;
   logout: () => void;
   // Goods Actions
-  addGoodsItem: (item: Omit<GoodsItem, 'id' | 'adminId'>) => void;
+  addGoodsItem: (item: Omit<GoodsItem, 'id' | 'adminId' | 'companyId'>) => void;
   removeGoodsItem: (id: string) => void;
-  addGoodsTransaction: (transaction: Omit<GoodsTransaction, 'id' | 'date' | 'adminId'>) => void;
+  addGoodsTransaction: (transaction: Omit<GoodsTransaction, 'id' | 'date' | 'adminId' | 'companyId'>) => void;
   // Equipment Actions
-  addEquipmentItem: (item: Omit<EquipmentItem, 'id' | 'status' | 'currentUser' | 'adminId'>) => void;
+  addEquipmentItem: (item: Omit<EquipmentItem, 'id' | 'status' | 'currentUser' | 'adminId' | 'companyId'>) => void;
   removeEquipmentItem: (id: string) => void;
-  addEquipmentLog: (log: Omit<EquipmentLog, 'id' | 'date' | 'adminId'>) => void;
+  addEquipmentLog: (log: Omit<EquipmentLog, 'id' | 'date' | 'adminId' | 'companyId'>) => void;
   updateEquipmentCondition: (id: string, condition: EquipmentItem['condition']) => void;
   // Vehicle Actions
-  addVehicleItem: (item: Omit<VehicleItem, 'id' | 'status' | 'adminId'>) => void;
+  addVehicleItem: (item: Omit<VehicleItem, 'id' | 'status' | 'adminId' | 'companyId'>) => void;
   removeVehicleItem: (id: string) => void;
-  addVehicleLog: (log: Omit<VehicleLog, 'id' | 'date' | 'status' | 'adminId'>) => void;
+  addVehicleLog: (log: Omit<VehicleLog, 'id' | 'date' | 'status' | 'adminId' | 'companyId'>) => void;
   finishVehicleTrip: (logId: string) => void;
-  addVehicleNeed: (need: Omit<VehicleNeed, 'id' | 'date' | 'adminId'>) => void;
+  addVehicleNeed: (need: Omit<VehicleNeed, 'id' | 'date' | 'adminId' | 'companyId'>) => void;
   updateVehicleStatus: (id: string, status: VehicleItem['status']) => void;
   // Technician Actions
-  addTechnician: (tech: Omit<Technician, 'id' | 'adminId'>) => void;
+  addTechnician: (tech: Omit<Technician, 'id' | 'adminId' | 'companyId'>) => void;
   removeTechnician: (id: string) => void;
+  // Company Actions
+  addCompany: (company: Omit<Company, 'id'>) => void;
+  removeCompany: (id: string) => void;
+  toggleCompanyDisabled: (id: string, disabled: boolean) => void;
+  updateCompany: (id: string, updates: Partial<Omit<Company, 'id'>>) => void;
   // User Actions
   addUser: (user: Omit<User, 'id'>) => void;
+  updateUser: (id: string, updates: Partial<Omit<User, 'id'>>) => void;
   removeUser: (id: string) => void;
+  toggleUserDisabled: (id: string, disabled: boolean) => void;
 }
 
 const defaultState: AppState = {
+  companies: [
+    { id: 'c1', name: 'PT Logistik A', disabled: false },
+    { id: 'c2', name: 'PT Logistik B', disabled: false }
+  ],
   users: [
-    { id: 'super1', username: 'superadmin', password: '123', role: 'superadmin', name: 'Super Administrator' },
-    { id: 'admin1', username: 'admin1', password: '123', role: 'admin', name: 'Admin Gudang A' },
-    { id: 'admin2', username: 'admin2', password: '123', role: 'admin', name: 'Admin Gudang B' }
+    { id: 'super1', username: 'superadmin', password: '123', role: 'superadmin', name: 'Super Administrator', disabled: false },
+    { id: 'admin1', username: 'admin1', password: '123', role: 'admin', name: 'Admin Gudang A', companyId: 'c1', contact: '081234567890', disabled: false },
+    { id: 'admin2', username: 'admin2', password: '123', role: 'admin', name: 'Admin Gudang B', companyId: 'c2', contact: '081234567891', disabled: false },
+    { id: 'peng1', username: 'pengawas1', password: '123', role: 'pengawas', name: 'Pengawas A', companyId: 'c1', contact: '081234567892', disabled: false },
+    { id: 'tek1', username: 'teknisi1', password: '123', role: 'teknisi', name: 'Teknisi A', companyId: 'c1', contact: '081234567893', disabled: false }
   ],
   currentUser: null,
   goods: [
-    { id: '1', adminId: 'admin1', name: 'Semen Portland', category: 'Material', stock: 150, minStock: 50, unit: 'Sak' },
-    { id: '2', adminId: 'admin1', name: 'Paku 5cm', category: 'Material', stock: 50, minStock: 10, unit: 'Kg' }
+    { id: '1', adminId: 'admin1', companyId: 'c1', name: 'Semen Portland', category: 'Material', stock: 150, minStock: 50, unit: 'Sak' },
+    { id: '2', adminId: 'admin1', companyId: 'c1', name: 'Paku 5cm', category: 'Material', stock: 50, minStock: 10, unit: 'Kg' }
   ],
   goodsTransactions: [],
   equipment: [
-    { id: '1', adminId: 'admin1', name: 'Mesin Bor Bosch', condition: 'Baik', status: 'Tersedia' },
-    { id: '2', adminId: 'admin1', name: 'Genset 5000W', condition: 'Baik', status: 'Tersedia' }
+    { id: '1', adminId: 'admin1', companyId: 'c1', name: 'Mesin Bor Bosch', condition: 'Baik', status: 'Tersedia' },
+    { id: '2', adminId: 'admin1', companyId: 'c1', name: 'Genset 5000W', condition: 'Baik', status: 'Tersedia' }
   ],
   equipmentLogs: [],
   vehicles: [
-    { id: '1', adminId: 'admin1', name: 'Mitsubishi Colt Diesel', plateNumber: 'B 1234 CD', status: 'Tersedia' },
-    { id: '2', adminId: 'admin1', name: 'Toyota Hilux', plateNumber: 'B 5678 EF', status: 'Tersedia' }
+    { id: '1', adminId: 'admin1', companyId: 'c1', name: 'Mitsubishi Colt Diesel', plateNumber: 'B 1234 CD', status: 'Tersedia' },
+    { id: '2', adminId: 'admin1', companyId: 'c1', name: 'Toyota Hilux', plateNumber: 'B 5678 EF', status: 'Tersedia' }
   ],
   vehicleLogs: [],
   vehicleNeeds: [],
   technicians: [
-    { id: '1', adminId: 'admin1', name: 'Budi Santoso', role: 'Teknisi Gudang', phone: '081234567890' },
-    { id: '2', adminId: 'admin1', name: 'Agus Pratama', role: 'Mekanik', phone: '089876543210' }
+    { id: '1', adminId: 'admin1', companyId: 'c1', name: 'Budi Santoso', role: 'Teknisi Gudang', phone: '081234567890' },
+    { id: '2', adminId: 'admin1', companyId: 'c1', name: 'Agus Pratama', role: 'Mekanik', phone: '089876543210' }
   ]
 };
 
@@ -111,10 +125,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const generateId = () => Math.random().toString(36).substr(2, 9);
   
   const getAdminId = () => state.currentUser?.id || 'admin1';
+  const getCurrentCompanyId = () => state.currentUser?.companyId;
 
   const login = (username: string, password?: string) => {
     const user = state.users.find(u => u.username === username && u.password === password);
-    if (user) {
+    const company = user?.companyId ? state.companies.find(c => c.id === user.companyId) : undefined;
+    if (user && !user.disabled && !company?.disabled) {
       setState(prev => ({ ...prev, currentUser: user }));
       return true;
     }
@@ -125,16 +141,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState(prev => ({ ...prev, currentUser: null }));
   };
 
-  const addGoodsItem = (item: Omit<GoodsItem, 'id' | 'adminId'>) => {
-    setState(prev => ({ ...prev, goods: [...prev.goods, { ...item, id: generateId(), adminId: getAdminId() }] }));
+  const addGoodsItem = (item: Omit<GoodsItem, 'id' | 'adminId' | 'companyId'>) => {
+    setState(prev => ({ ...prev, goods: [...prev.goods, { ...item, id: generateId(), adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' }] }));
   };
 
   const removeGoodsItem = (id: string) => {
     setState(prev => ({ ...prev, goods: prev.goods.filter(g => g.id !== id) }));
   };
 
-  const addGoodsTransaction = (transaction: Omit<GoodsTransaction, 'id' | 'date' | 'adminId'>) => {
-    const newTx: GoodsTransaction = { ...transaction, id: generateId(), date: new Date().toISOString(), adminId: getAdminId() };
+  const addGoodsTransaction = (transaction: Omit<GoodsTransaction, 'id' | 'date' | 'adminId' | 'companyId'>) => {
+    const newTx: GoodsTransaction = { ...transaction, id: generateId(), date: new Date().toISOString(), adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' };
     setState(prev => {
       const updatedGoods = prev.goods.map(g => {
         if (g.id === transaction.itemId) {
@@ -149,10 +165,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const addEquipmentItem = (item: Omit<EquipmentItem, 'id' | 'status' | 'currentUser' | 'adminId'>) => {
+  const addEquipmentItem = (item: Omit<EquipmentItem, 'id' | 'status' | 'currentUser' | 'adminId' | 'companyId'>) => {
     setState(prev => ({ 
       ...prev, 
-      equipment: [...prev.equipment, { ...item, id: generateId(), status: 'Tersedia', adminId: getAdminId() }] 
+      equipment: [...prev.equipment, { ...item, id: generateId(), status: 'Tersedia', adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' }] 
     }));
   };
 
@@ -160,8 +176,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState(prev => ({ ...prev, equipment: prev.equipment.filter(e => e.id !== id) }));
   };
 
-  const addEquipmentLog = (log: Omit<EquipmentLog, 'id' | 'date' | 'adminId'>) => {
-    const newLog: EquipmentLog = { ...log, id: generateId(), date: new Date().toISOString(), adminId: getAdminId() };
+  const addEquipmentLog = (log: Omit<EquipmentLog, 'id' | 'date' | 'adminId' | 'companyId'>) => {
+    const newLog: EquipmentLog = { ...log, id: generateId(), date: new Date().toISOString(), adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' };
     setState(prev => {
       const updatedEq = prev.equipment.map(eq => {
         if (eq.id === log.equipmentId) {
@@ -185,10 +201,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  const addVehicleItem = (item: Omit<VehicleItem, 'id' | 'status' | 'adminId'>) => {
+  const addVehicleItem = (item: Omit<VehicleItem, 'id' | 'status' | 'adminId' | 'companyId'>) => {
     setState(prev => ({
       ...prev,
-      vehicles: [...prev.vehicles, { ...item, id: generateId(), status: 'Tersedia', adminId: getAdminId() }]
+      vehicles: [...prev.vehicles, { ...item, id: generateId(), status: 'Tersedia', adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' }]
     }));
   };
 
@@ -196,13 +212,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setState(prev => ({ ...prev, vehicles: prev.vehicles.filter(v => v.id !== id) }));
   };
 
-  const addVehicleLog = (log: Omit<VehicleLog, 'id' | 'date' | 'status' | 'adminId'>) => {
+  const addVehicleLog = (log: Omit<VehicleLog, 'id' | 'date' | 'status' | 'adminId' | 'companyId'>) => {
     const newLog: VehicleLog = { 
       ...log, 
       id: generateId(), 
       startDate: new Date().toISOString(),
       status: 'JALAN',
-      adminId: getAdminId()
+      adminId: getAdminId(),
+      companyId: getCurrentCompanyId() ?? ''
     };
     setState(prev => ({
       ...prev,
@@ -226,10 +243,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const addVehicleNeed = (need: Omit<VehicleNeed, 'id' | 'date' | 'adminId'>) => {
+  const addVehicleNeed = (need: Omit<VehicleNeed, 'id' | 'date' | 'adminId' | 'companyId'>) => {
     setState(prev => ({
       ...prev,
-      vehicleNeeds: [{ ...need, id: generateId(), date: new Date().toISOString(), adminId: getAdminId() }, ...prev.vehicleNeeds]
+      vehicleNeeds: [{ ...need, id: generateId(), date: new Date().toISOString(), adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' }, ...prev.vehicleNeeds]
     }));
   };
 
@@ -240,10 +257,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  const addTechnician = (tech: Omit<Technician, 'id' | 'adminId'>) => {
+  const addTechnician = (tech: Omit<Technician, 'id' | 'adminId' | 'companyId'>) => {
     setState(prev => ({
       ...prev,
-      technicians: [...prev.technicians, { ...tech, id: generateId(), adminId: getAdminId() }]
+      technicians: [...prev.technicians, { ...tech, id: generateId(), adminId: getAdminId(), companyId: getCurrentCompanyId() ?? '' }]
     }));
   };
 
@@ -257,7 +274,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addUser = (user: Omit<User, 'id'>) => {
     setState(prev => ({
       ...prev,
-      users: [...prev.users, { ...user, id: generateId() }]
+      users: [...prev.users, { ...user, id: generateId(), disabled: user.disabled ?? false }]
     }));
   };
 
@@ -268,9 +285,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  const filterByTenant = <T extends { adminId: string }>(data: T[]): T[] => {
+  const toggleUserDisabled = (id: string, disabled: boolean) => {
+    setState(prev => ({
+      ...prev,
+      users: prev.users.map(u => u.id === id ? { ...u, disabled } : u)
+    }));
+  };
+
+  const updateUser = (id: string, updates: Partial<Omit<User, 'id'>>) => {
+    setState(prev => ({
+      ...prev,
+      users: prev.users.map(u => u.id === id ? { ...u, ...updates } : u)
+    }));
+  };
+
+  const addCompany = (company: Omit<Company, 'id'>) => {
+    setState(prev => ({
+      ...prev,
+      companies: [...prev.companies, { ...company, id: generateId(), disabled: company.disabled ?? false }]
+    }));
+  };
+
+  const removeCompany = (id: string) => {
+    setState(prev => ({
+      ...prev,
+      companies: prev.companies.filter(c => c.id !== id),
+      users: prev.users.map(u => u.companyId === id ? { ...u, companyId: undefined } : u),
+      goods: prev.goods.filter(g => g.companyId !== id),
+      goodsTransactions: prev.goodsTransactions.filter(tx => tx.companyId !== id),
+      equipment: prev.equipment.filter(e => e.companyId !== id),
+      equipmentLogs: prev.equipmentLogs.filter(log => log.companyId !== id),
+      vehicles: prev.vehicles.filter(v => v.companyId !== id),
+      vehicleLogs: prev.vehicleLogs.filter(log => log.companyId !== id),
+      vehicleNeeds: prev.vehicleNeeds.filter(n => n.companyId !== id),
+      technicians: prev.technicians.filter(t => t.companyId !== id)
+    }));
+  };
+
+  const toggleCompanyDisabled = (id: string, disabled: boolean) => {
+    setState(prev => ({
+      ...prev,
+      companies: prev.companies.map(c => c.id === id ? { ...c, disabled } : c)
+    }));
+  };
+
+  const updateCompany = (id: string, updates: Partial<Omit<Company, 'id'>>) => {
+    setState(prev => ({
+      ...prev,
+      companies: prev.companies.map(c => c.id === id ? { ...c, ...updates } : c)
+    }));
+  };
+
+  const filterByTenant = <T extends { companyId?: string }>(data: T[]): T[] => {
     if (state.currentUser?.role === 'superadmin') return data;
-    return data.filter(item => item.adminId === state.currentUser?.id);
+    if (!state.currentUser?.companyId) return [];
+    return data.filter(item => item.companyId === state.currentUser.companyId);
   };
 
   return (
@@ -301,8 +370,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateVehicleStatus,
       addTechnician,
       removeTechnician,
+      addCompany,
+      removeCompany,
+      toggleCompanyDisabled,
+      updateCompany,
       addUser,
-      removeUser
+      updateUser,
+      removeUser,
+      toggleUserDisabled
     }}>
       {children}
     </AppContext.Provider>
