@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   // 'admin' | 'superadmin' | 'pengawas' | 'teknisi'
+  name      String
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  contact   String?
+  disabled  Boolean  @default(false)
+}
+
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  disabled  Boolean  @default(false)
+
+  // Relations
+  users             User[]
+  technicians       Technician[]
+  goods             GoodsItem[]
+  goodsTransactions GoodsTransaction[]
+  equipment         EquipmentItem[]
+  equipmentLogs     EquipmentLog[]
+  vehicles          VehicleItem[]
+  vehicleLogs       VehicleLog[]
+  vehicleNeeds      VehicleNeed[]
+}
+
+model Technician {
+  id        String   @id @default(uuid())
+  adminId   String
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name      String
+  role      String
+  phone     String
+}
+
+model GoodsItem {
+  id        String   @id @default(uuid())
+  adminId   String
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name      String
+  category  String
+  stock     Float
+  minStock  Float
+  unit      String
+
+  // Relations
+  transactions GoodsTransaction[]
+}
+
+model GoodsTransaction {
+  id        String   @id @default(uuid())
+  adminId   String
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      GoodsItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  type      String   // 'IN' | 'OUT'
+  quantity  Float
+  date      DateTime @default(now())
+  notes     String
+  pic       String?
+}
+
+model EquipmentItem {
+  id          String   @id @default(uuid())
+  adminId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  condition   String   // 'Baik' | 'Rusak Ringan' | 'Rusak Berat'
+  status      String   // 'Tersedia' | 'Dipinjam'
+  currentUser String?
+
+  // Relations
+  logs        EquipmentLog[]
+}
+
+model EquipmentLog {
+  id          String   @id @default(uuid())
+  adminId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  equipmentId String
+  equipment   EquipmentItem @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  user        String
+  action      String   // 'PINJAM' | 'KEMBALI'
+  date        DateTime @default(now())
+  condition   String   // 'Baik' | 'Rusak Ringan' | 'Rusak Berat'
+  notes       String
+}
+
+model VehicleItem {
+  id          String   @id @default(uuid())
+  adminId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  plateNumber String
+  name        String
+  status      String   // 'Tersedia' | 'Sedang Digunakan' | 'Perbaikan'
+
+  // Relations
+  logs        VehicleLog[]
+  needs       VehicleNeed[]
+}
+
+model VehicleLog {
+  id          String   @id @default(uuid())
+  adminId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicleId   String
+  vehicle     VehicleItem @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  driver      String
+  purpose     String
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  status      String   // 'JALAN' | 'SELESAI'
+}
+
+model VehicleNeed {
+  id          String   @id @default(uuid())
+  adminId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicleId   String
+  vehicle     VehicleItem @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  type        String   // 'BBM' | 'Servis' | 'Suku Cadang' | 'Lainnya'
+  description String
+  cost        Float
+  date        DateTime @default(now())
+  pic         String
+}
